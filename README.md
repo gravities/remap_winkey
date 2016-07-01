@@ -8,6 +8,8 @@
 ## Features
 
 - Remapping Win key to Ctrl
+- Remapping Zenkaku/hankaku key to IME Off
+- Remapping Katakana/hiragana/romaji key to IME On
 - Permanently disable Numlock
 - Remapping Insert key to Backspace
 - Jiggling Mouse cursor
