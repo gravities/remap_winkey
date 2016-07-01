@@ -5,8 +5,8 @@ Return
 OnTimer:
 If A_TimeIdlePhysical > 6000
 {
-	MouseMove 0, -1, 0, R
-	MouseMove 0, 1, 0, R
+	MouseMove 0, -.0001, 0, R
+	MouseMove 0, .0001, 0, R
 }
 Return
 
