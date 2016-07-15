@@ -6,10 +6,10 @@
 スタートアップ実行で常駐させてお使いください。
 
 ## Features
-- Reverse wheel schroll
-- Remapping Win key to Ctrl
-- Remapping Zenkaku/hankaku key to IME Off
-- Remapping Katakana/hiragana/romaji key to IME On
-- Permanently disable Numlock
-- Remapping Insert key to Backspace
-- Jiggling Mouse cursor
+- Reverse wheel schroll // マウスホイールを上下逆に
+- Remapping Win key to Ctrl // ウィンドウズキーをctrlに
+- Remapping Zenkaku/hankaku key to IME Off // 半角/全角キーをIMEオフに固定
+- Remapping Katakana/hiragana/romaji key to IME On // カタカナ/ひらがなキーをIMEオンに固定
+- Permanently disable Numlock // Numlockさせない
+- Remapping Insert key to Backspace // InsertキーをBackspaceに
+- Jiggling Mouse cursor // マウスカーソルを微妙に動かし続けてログオフ防止
