@@ -5,8 +5,8 @@ Return
 OnTimer:
 If A_TimeIdlePhysical > 6000
 {
-	MouseMove 0, -.0001, 0, R
-	MouseMove 0, .0001, 0, R
+	MouseMove 0, -.1, 0, R
+	MouseMove 0, .1, 0, R
 }
 Return
 
@@ -15,6 +15,10 @@ LWin::LCtrl
 Capslock::Ctrl
 sc03a::Ctrl
 Ins::BS
+WheelUp::WheelDown
+WheelDown::WheelUp
+
+
 
 IME_GET(WinTitle="")
 ;-----------------------------------------------------------
