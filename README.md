@@ -13,3 +13,6 @@
 - Permanently disable Numlock // Numlockさせない
 - Remapping Insert key to Backspace // InsertキーをBackspaceに
 - Jiggling Mouse cursor // マウスカーソルを微妙に動かし続けてログオフ防止
+
+## Download
+[remapwinkey.exe](https://github.com/pokkur/Macnize_Windows_Keyboard/blob/master/dist/remapwinkey.exe)

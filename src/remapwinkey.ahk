@@ -1,12 +1,12 @@
 #Persistent
-SetTimer,OnTimer,1000
+SetTimer,OnTimer,60000
 Return
 
 OnTimer:
-If A_TimeIdlePhysical > 6000
+If A_TimeIdlePhysical > 1000
 {
-	MouseMove 0, -.1, 0, R
-	MouseMove 0, .1, 0, R
+	MouseMove 0, 1, 0, R
+	MouseMove 0, -1, 0, R
 }
 Return
 
