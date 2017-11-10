@@ -13,6 +13,8 @@ OnTimer:
 LWin::LCtrl
 Capslock::Ctrl
 sc03a::Ctrl
+WheelUp::WheelDown
+WheelDown::WheelUp
 
 #Include IME.ahk
 
