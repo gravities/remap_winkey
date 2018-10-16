@@ -1,6 +1,6 @@
 # Macnize Windows's Keyboard
 
-しぶしぶWindowsを使用せざるを得ないMacユーザー向けのユーティリティーです。
+しぶしぶWindowsを使用せざるを得ないMacユーザー向けのユーティリティーです。  
 スタートアップ実行で常駐させてお使いください。
 
 ## Update
