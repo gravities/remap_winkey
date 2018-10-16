@@ -1,17 +1,27 @@
 # Macnize Windows's Keyboard
 
-## Overview
-
 しぶしぶWindowsを使用せざるを得ないMacユーザー向けのユーティリティーです。
 スタートアップ実行で常駐させてお使いください。
 
+## Update
+
+### 2018.10.16
+
+- Virtual Desktops Controller
+
 ## Features
-- Reverse wheel schroll // マウスホイールを上下逆に
-- Remapping Win key to Ctrl // ウィンドウズキーをctrlに
-- Remapping Zenkaku/hankaku key to IME Off // 半角/全角キーをIMEオフに固定
-- Remapping Katakana/hiragana/romaji key to IME On // カタカナ/ひらがなキーをIMEオンに固定
-- Permanently enable Numlock // 常にNumlockをオン
-- Jiggling Mouse cursor // マウスカーソルを微妙に動かし続けてログオフ防止
+
+|                        En                        |                         Ja                         |
+| ------------------------------------------------ | -------------------------------------------------- |
+| Natural (Reverse) Wheel                          | マウスホイールを上下逆に                           |
+| Remapping `Win` to `Ctrl`                        | `Windows` を `Ctrl` に                             |
+| Remapping `Zenkaku/Hankaku` is `IME OFF`         | `半角/全角` は `IMEオフ固定`                       |
+| Remapping `Katakana/Hiragana/Romaji`is `IME ON`  | `カタカナ/ひらがな` は `IMEオン固定`               |
+| Micro Jiggle the Cursor (Prevent Log off)        | マウスカーソルを微小動作させてログオフ防止         |
+| `［Ctrl］ + [↑] [↑]` is Desktop list             | デスクトップ一覧を表示（［Win］＋［Tab］）         |
+| `［Ctrl］ + ［→］［→］` is Move to Right Desktop | 右のデスクトップを表示（［Win］＋［Ctrl］＋［→］） |
+| `［Ctrl］ + ［←］［←］` is Move to Left Desktop  | 左のデスクトップを表示（［Win］＋［Ctrl］＋［←］） |
 
 ## Download
+
 [remapwinkey.exe](https://github.com/pokkur/Macnize_Windows_Keyboard/blob/master/dist/remapwinkey.exe)

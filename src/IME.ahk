@@ -1,130 +1,56 @@
 ﻿/*****************************************************************************
-  IME制御用 関数群 (IME.ahk)
+IME制御用 関数群 (IME.ahk)
 
-    グローバル変数 : なし
-    各関数の依存性 : なし(必要関数だけ切出してコピペでも使えます)
+グローバル変数 : なし
+各関数の依存性 : なし(必要関数だけ切出してコピペでも使えます)
 
-    AutoHotkey:     L 1.1.08.01
-    Language:       Japanease
-    Platform:       NT系
-    Author:         eamat.      http://www6.atwiki.jp/eamat/
+AutoHotkey:     L 1.1.08.01
+Language:       Japanease
+Platform:       NT系
+Author:         eamat.      http://www6.atwiki.jp/eamat/
 *****************************************************************************
 履歴
-    2008.07.11 v1.0.47以降の 関数ライブラリスクリプト対応用にファイル名を変更
-    2008.12.10 コメント修正
-    2009.07.03 IME_GetConverting() 追加 
-               Last Found Windowが有効にならない問題修正、他。
-    2009.12.03
-      ・IME 状態チェック GUIThreadInfo 利用版 入れ込み
-       （IEや秀丸8βでもIME状態が取れるように）
-        http://blechmusik.xrea.jp/resources/keyboard_layout/DvorakJ/inc/IME.ahk
-      ・Google日本語入力β 向け調整
-        入力モード 及び 変換モードは取れないっぽい
-        IME_GET/SET() と IME_GetConverting()は有効
+2008.07.11 v1.0.47以降の 関数ライブラリスクリプト対応用にファイル名を変更
+2008.12.10 コメント修正
+2009.07.03 IME_GetConverting() 追加
+			Last Found Windowが有効にならない問題修正、他。
+2009.12.03
+	・IME 状態チェック GUIThreadInfo 利用版 入れ込み
+	（IEや秀丸8βでもIME状態が取れるように）
+	http://blechmusik.xrea.jp/resources/keyboard_layout/DvorakJ/inc/IME.ahk
+	・Google日本語入力β 向け調整
+	入力モード 及び 変換モードは取れないっぽい
+	IME_GET/SET() と IME_GetConverting()は有効
 
-    2012.11.10 x64 & Unicode対応
-      実行環境を AHK_L U64に (本家およびA32,U32版との互換性は維持したつもり)
-      ・LongPtr対策：ポインタサイズをA_PtrSizeで見るようにした
+2012.11.10 x64 & Unicode対応
+	実行環境を AHK_L U64に (本家およびA32,U32版との互換性は維持したつもり)
+	・LongPtr対策：ポインタサイズをA_PtrSizeで見るようにした
 
-                ;==================================
-                ;  GUIThreadInfo 
-                ;=================================
-                ; 構造体 GUITreadInfo
-                ;typedef struct tagGUITHREADINFO {(x86) (x64)
-                ;	DWORD   cbSize;                 0    0
-                ;	DWORD   flags;                  4    4   ※
-                ;	HWND	hwndActive;             8    8
-                ;	HWND	hwndFocus;             12    16  ※
-                ;	HWND	hwndCapture;           16    24
-                ;	HWND	hwndMenuOwner;         20    32
-                ;	HWND	hwndMoveSize;          24    40
-                ;	HWND	hwndCaret;             28    48
-                ;	RECT	rcCaret;               32    56
-                ;} GUITHREADINFO, *PGUITHREADINFO;
+			;==================================
+			;  GUIThreadInfo
+			;=================================
+			; 構造体 GUITreadInfo
+			;typedef struct tagGUITHREADINFO {(x86) (x64)
+			;    DWORD   cbSize;                 0    0
+			;    DWORD   flags;                  4    4   ※
+			;    HWND    hwndActive;             8    8
+			;    HWND    hwndFocus;             12    16  ※
+			;    HWND    hwndCapture;           16    24
+			;    HWND    hwndMenuOwner;         20    32
+			;    HWND    hwndMoveSize;          24    40
+			;    HWND    hwndCaret;             28    48
+			;    RECT    rcCaret;               32    56
+			;} GUITHREADINFO, *PGUITHREADINFO;
 
-      ・WinTitleパラメータが実質無意味化していたのを修正
-        対象がアクティブウィンドウの時のみ GetGUIThreadInfoを使い
-        そうでないときはControlハンドルを使用
-        一応バックグラウンドのIME情報も取れるように戻した
-        (取得ハンドルをWindowからControlに変えたことでブラウザ以外の大半の
-        アプリではバックグラウンドでも正しく値が取れるようになった。
-        ※ブラウザ系でもアクティブ窓のみでの使用なら問題ないと思う、たぶん)
+	・WinTitleパラメータが実質無意味化していたのを修正
+	対象がアクティブウィンドウの時のみ GetGUIThreadInfoを使い
+	そうでないときはControlハンドルを使用
+	一応バックグラウンドのIME情報も取れるように戻した
+	(取得ハンドルをWindowからControlに変えたことでブラウザ以外の大半の
+	アプリではバックグラウンドでも正しく値が取れるようになった。
+	※ブラウザ系でもアクティブ窓のみでの使用なら問題ないと思う、たぶん)
 
 */
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;
-; 動作確認用 内部ルーチン (マウスカーソル位置のウィンドウのIME状態を見る)
-;  単体起動時のテスト用なので削除しても問題なし
-_ImeAutoExecuteSample:
-    Hotkey,#1,_ImeGetTest
-    Hotkey,#2,_ImeSetTest
-    Hotkey,#3,_ImeIsConvertingTest
-    Hotkey,+ESC,_ImeTestExt
-    SetTimer,_ImeInfoTimer,ON
-return
-
-;--- IME状態表示タイマ ---
-_ImeInfoTimer:
-    Tooltip,% "IME_GET			: "     . IME_GET(_mhwnd())             . "`n"
-          .  "IME_GetConvMode		: " . IME_GetConvMode(_mhwnd())     . "`n"
-          .  "IME_GetSentenceMode	: " . IME_GetSentenceMode(_mhwnd()) . "`n"
-          .  "IME_GetConverting	: "     . IME_GetConverting(_mhwnd())
-return
-
-;--- IME Get Test [Win]+[1] ---
-_ImeGetTest:
-    MsgBox,% "IME_GET			: "     . IME_GET(_mhwnd())             . "`n"
-          .  "IME_GetConvMode		: " . IME_GetConvMode(_mhwnd())     . "`n"
-          .  "IME_GetSentenceMode	: " . IME_GetSentenceMode(_mhwnd()) . "`n"
-return
-;--- IME Get Test [Win]+[2] ---
-_ImeSetTest:
-    MsgBox,% "IME_SET			: "     . IME_SET(1,_mhwnd())             . "`n"
-          .  "IME_SetConvMode		: " . IME_SetConvMode(0x08,_mhwnd())  . "`n"
-          .  "IME_SetSentenceMode	: " . IME_SetSentenceMode(1,_mhwnd()) . "`n"
-return
-
-_mhwnd(){	;background test
-	MouseGetPos,x,,hwnd
-	return "ahk_id " . hwnd
-}
-
-;------------------------------------------------------------------
-; IME窓のクラス名を調べるテストルーチン
-;   入力or変換状態でIme窓にマウスカーソル持ってって [Win]+[3]押す
-;   Clipboardに Class名がコピーされる。入力窓/候補窓 それぞれ調べる。
-;   調べたクラス名は 正規表現になおして
-;      IME_GetConverting("A","入力窓クラス","候補窓クラス")
-;   とかやって使う。(もしくは IME_GetConverting()の中に直接追加する)
-;
-;   あああ    ← 入力窓の上に マウスカーソル持ってって [Win]+[3]押す
-;   ￣￣￣       Clipboardに Class名がコピーされる。
-;                ※ MS Office系のシームレス入力状態では取れないっぽい
-;                   DetectHiddenWindows,ONでもダメ。シームレスOFFにしないと無理
-;
-;   愛
-;  |愛　　　| ← 候補窓の上にマウスカーソル持ってって [Win]+[3]押す
-;  |亜依　　|    Clipboardに Class名がコピーされる。
-;  |あい　　|
-;  |藍　　　|
-;  |　：　　|
-;  ￣￣￣￣
-;------------------------------------------------------------------
-_ImeIsConvertingTest:
-    _ImeTestClassCheck()
-return
-_ImeTestClassCheck()  {
-    MouseGetPos,,,hwnd
-    WinGetClass,Imeclass,ahk_id %hwnd%
-    Clipboard := Imeclass
-    ;IME_GetConverting() 動作チェック & IME 入力窓/候補窓 Class名確認
-    MsgBox,% Imeclass "`n" IME_GetConverting()
-}
-;--- 常駐テスト終了 [Shift]+[ESC] ---
-_ImeTestExt:
-ExitApp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 ;---------------------------------------------------------------------------
 ;  汎用関数 (多分どのIMEでもいけるはず)
@@ -135,20 +61,20 @@ ExitApp
 ;   戻り値          1:ON / 0:OFF
 ;-----------------------------------------------------------
 IME_GET(WinTitle="A")  {
-	ControlGet,hwnd,HWND,,,%WinTitle%
-	if	(WinActive(WinTitle))	{
-		ptrSize := !A_PtrSize ? 4 : A_PtrSize
-	    VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
-	    NumPut(cbSize, stGTI,  0, "UInt")   ;	DWORD   cbSize;
-		hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
-	             ? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
-	}
+ControlGet,hwnd,HWND,,,%WinTitle%
+if    (WinActive(WinTitle))    {
+	ptrSize := !A_PtrSize ? 4 : A_PtrSize
+	VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
+	NumPut(cbSize, stGTI,  0, "UInt")   ;    DWORD   cbSize;
+	hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
+				? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
+}
 
-    return DllCall("SendMessage"
-          , UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
-          , UInt, 0x0283  ;Message : WM_IME_CONTROL
-          ,  Int, 0x0005  ;wParam  : IMC_GETOPENSTATUS
-          ,  Int, 0)      ;lParam  : 0
+return DllCall("SendMessage"
+		, UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
+		, UInt, 0x0283  ;Message : WM_IME_CONTROL
+		,  Int, 0x0005  ;wParam  : IMC_GETOPENSTATUS
+		,  Int, 0)      ;lParam  : 0
 }
 
 ;-----------------------------------------------------------
@@ -158,20 +84,20 @@ IME_GET(WinTitle="A")  {
 ;   戻り値          0:成功 / 0以外:失敗
 ;-----------------------------------------------------------
 IME_SET(SetSts, WinTitle="A")    {
-	ControlGet,hwnd,HWND,,,%WinTitle%
-	if	(WinActive(WinTitle))	{
-		ptrSize := !A_PtrSize ? 4 : A_PtrSize
-	    VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
-	    NumPut(cbSize, stGTI,  0, "UInt")   ;	DWORD   cbSize;
-		hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
-	             ? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
-	}
+ControlGet,hwnd,HWND,,,%WinTitle%
+if    (WinActive(WinTitle))    {
+	ptrSize := !A_PtrSize ? 4 : A_PtrSize
+	VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
+	NumPut(cbSize, stGTI,  0, "UInt")   ;    DWORD   cbSize;
+	hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
+				? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
+}
 
-    return DllCall("SendMessage"
-          , UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
-          , UInt, 0x0283  ;Message : WM_IME_CONTROL
-          ,  Int, 0x006   ;wParam  : IMC_SETOPENSTATUS
-          ,  Int, SetSts) ;lParam  : 0 or 1
+return DllCall("SendMessage"
+		, UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
+		, UInt, 0x0283  ;Message : WM_IME_CONTROL
+		,  Int, 0x006   ;wParam  : IMC_SETOPENSTATUS
+		,  Int, SetSts) ;lParam  : 0 or 1
 }
 
 ;===========================================================================
@@ -190,7 +116,7 @@ IME_SET(SetSts, WinTitle="A")    {
 
 ;  ※ 地域と言語のオプション - [詳細] - 詳細設定
 ;     - 詳細なテキストサービスのサポートをプログラムのすべてに拡張する
-;    が ONになってると値が取れない模様 
+;    が ONになってると値が取れない模様
 ;    (Google日本語入力βはここをONにしないと駄目なので値が取れないっぽい)
 
 ;-------------------------------------------------------
@@ -199,19 +125,19 @@ IME_SET(SetSts, WinTitle="A")    {
 ;   戻り値          入力モード
 ;--------------------------------------------------------
 IME_GetConvMode(WinTitle="A")   {
-	ControlGet,hwnd,HWND,,,%WinTitle%
-	if	(WinActive(WinTitle))	{
-		ptrSize := !A_PtrSize ? 4 : A_PtrSize
-	    VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
-	    NumPut(cbSize, stGTI,  0, "UInt")   ;	DWORD   cbSize;
-		hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
-	             ? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
-	}
-    return DllCall("SendMessage"
-          , UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
-          , UInt, 0x0283  ;Message : WM_IME_CONTROL
-          ,  Int, 0x001   ;wParam  : IMC_GETCONVERSIONMODE
-          ,  Int, 0)      ;lParam  : 0
+ControlGet,hwnd,HWND,,,%WinTitle%
+if    (WinActive(WinTitle))    {
+	ptrSize := !A_PtrSize ? 4 : A_PtrSize
+	VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
+	NumPut(cbSize, stGTI,  0, "UInt")   ;    DWORD   cbSize;
+	hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
+				? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
+}
+return DllCall("SendMessage"
+		, UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
+		, UInt, 0x0283  ;Message : WM_IME_CONTROL
+		,  Int, 0x001   ;wParam  : IMC_GETCONVERSIONMODE
+		,  Int, 0)      ;lParam  : 0
 }
 
 ;-------------------------------------------------------
@@ -221,19 +147,19 @@ IME_GetConvMode(WinTitle="A")   {
 ;   戻り値          0:成功 / 0以外:失敗
 ;--------------------------------------------------------
 IME_SetConvMode(ConvMode,WinTitle="A")   {
-	ControlGet,hwnd,HWND,,,%WinTitle%
-	if	(WinActive(WinTitle))	{
-		ptrSize := !A_PtrSize ? 4 : A_PtrSize
-	    VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
-	    NumPut(cbSize, stGTI,  0, "UInt")   ;	DWORD   cbSize;
-		hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
-	             ? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
-	}
-    return DllCall("SendMessage"
-          , UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
-          , UInt, 0x0283      ;Message : WM_IME_CONTROL
-          ,  Int, 0x002       ;wParam  : IMC_SETCONVERSIONMODE
-          ,  Int, ConvMode)   ;lParam  : CONVERSIONMODE
+ControlGet,hwnd,HWND,,,%WinTitle%
+if    (WinActive(WinTitle))    {
+	ptrSize := !A_PtrSize ? 4 : A_PtrSize
+	VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
+	NumPut(cbSize, stGTI,  0, "UInt")   ;    DWORD   cbSize;
+	hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
+				? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
+}
+return DllCall("SendMessage"
+		, UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
+		, UInt, 0x0283      ;Message : WM_IME_CONTROL
+		,  Int, 0x002       ;wParam  : IMC_SETCONVERSIONMODE
+		,  Int, ConvMode)   ;lParam  : CONVERSIONMODE
 }
 
 ;===========================================================================
@@ -252,19 +178,19 @@ IME_SetConvMode(ConvMode,WinTitle="A")   {
 ;          WXG4             1:複合語  2:無変換 4:自動 8:連文節
 ;------------------------------------------------------------------
 IME_GetSentenceMode(WinTitle="A")   {
-	ControlGet,hwnd,HWND,,,%WinTitle%
-	if	(WinActive(WinTitle))	{
-		ptrSize := !A_PtrSize ? 4 : A_PtrSize
-	    VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
-	    NumPut(cbSize, stGTI,  0, "UInt")   ;	DWORD   cbSize;
-		hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
-	             ? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
-	}
-    return DllCall("SendMessage"
-          , UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
-          , UInt, 0x0283  ;Message : WM_IME_CONTROL
-          ,  Int, 0x003   ;wParam  : IMC_GETSENTENCEMODE
-          ,  Int, 0)      ;lParam  : 0
+ControlGet,hwnd,HWND,,,%WinTitle%
+if    (WinActive(WinTitle))    {
+	ptrSize := !A_PtrSize ? 4 : A_PtrSize
+	VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
+	NumPut(cbSize, stGTI,  0, "UInt")   ;    DWORD   cbSize;
+	hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
+				? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
+}
+return DllCall("SendMessage"
+		, UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
+		, UInt, 0x0283  ;Message : WM_IME_CONTROL
+		,  Int, 0x003   ;wParam  : IMC_GETSENTENCEMODE
+		,  Int, 0)      ;lParam  : 0
 }
 
 ;----------------------------------------------------------------
@@ -277,19 +203,19 @@ IME_GetSentenceMode(WinTitle="A")   {
 ;   戻り値          0:成功 / 0以外:失敗
 ;-----------------------------------------------------------------
 IME_SetSentenceMode(SentenceMode,WinTitle="A")  {
-	ControlGet,hwnd,HWND,,,%WinTitle%
-	if	(WinActive(WinTitle))	{
-		ptrSize := !A_PtrSize ? 4 : A_PtrSize
-	    VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
-	    NumPut(cbSize, stGTI,  0, "UInt")   ;	DWORD   cbSize;
-		hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
-	             ? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
-	}
-    return DllCall("SendMessage"
-          , UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
-          , UInt, 0x0283          ;Message : WM_IME_CONTROL
-          ,  Int, 0x004           ;wParam  : IMC_SETSENTENCEMODE
-          ,  Int, SentenceMode)   ;lParam  : SentenceMode
+ControlGet,hwnd,HWND,,,%WinTitle%
+if    (WinActive(WinTitle))    {
+	ptrSize := !A_PtrSize ? 4 : A_PtrSize
+	VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
+	NumPut(cbSize, stGTI,  0, "UInt")   ;    DWORD   cbSize;
+	hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
+				? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
+}
+return DllCall("SendMessage"
+		, UInt, DllCall("imm32\ImmGetDefaultIMEWnd", Uint,hwnd)
+		, UInt, 0x0283          ;Message : WM_IME_CONTROL
+		,  Int, 0x004           ;wParam  : IMC_SETSENTENCEMODE
+		,  Int, SentenceMode)   ;lParam  : SentenceMode
 }
 
 
@@ -316,38 +242,38 @@ IME_SetSentenceMode(SentenceMode,WinTitle="A")  {
 ;==========================================================================
 IME_GetConverting(WinTitle="A",ConvCls="",CandCls="") {
 
-    ;IME毎の 入力窓/候補窓Class一覧 ("|" 区切りで適当に足してけばOK)
-    ConvCls .= (ConvCls ? "|" : "")                 ;--- 入力窓 ---
-            .  "ATOK\d+CompStr"                     ; ATOK系
-            .  "|imejpstcnv\d+"                     ; MS-IME系
-            .  "|WXGIMEConv"                        ; WXG
-            .  "|SKKIME\d+\.*\d+UCompStr"           ; SKKIME Unicode
-            .  "|MSCTFIME Composition"              ; Google日本語入力
+;IME毎の 入力窓/候補窓Class一覧 ("|" 区切りで適当に足してけばOK)
+ConvCls .= (ConvCls ? "|" : "")                 ;--- 入力窓 ---
+		.  "ATOK\d+CompStr"                     ; ATOK系
+		.  "|imejpstcnv\d+"                     ; MS-IME系
+		.  "|WXGIMEConv"                        ; WXG
+		.  "|SKKIME\d+\.*\d+UCompStr"           ; SKKIME Unicode
+		.  "|MSCTFIME Composition"              ; Google日本語入力
 
-    CandCls .= (CandCls ? "|" : "")                 ;--- 候補窓 ---
-            .  "ATOK\d+Cand"                        ; ATOK系
-            .  "|imejpstCandList\d+|imejpstcand\d+" ; MS-IME 2002(8.1)XP付属
-            .  "|mscandui\d+\.candidate"            ; MS Office IME-2007
-            .  "|WXGIMECand"                        ; WXG
-            .  "|SKKIME\d+\.*\d+UCand"              ; SKKIME Unicode
-   CandGCls := "GoogleJapaneseInputCandidateWindow" ;Google日本語入力
+CandCls .= (CandCls ? "|" : "")                 ;--- 候補窓 ---
+		.  "ATOK\d+Cand"                        ; ATOK系
+		.  "|imejpstCandList\d+|imejpstcand\d+" ; MS-IME 2002(8.1)XP付属
+		.  "|mscandui\d+\.candidate"            ; MS Office IME-2007
+		.  "|WXGIMECand"                        ; WXG
+		.  "|SKKIME\d+\.*\d+UCand"              ; SKKIME Unicode
+CandGCls := "GoogleJapaneseInputCandidateWindow" ;Google日本語入力
 
-	ControlGet,hwnd,HWND,,,%WinTitle%
-	if	(WinActive(WinTitle))	{
-		ptrSize := !A_PtrSize ? 4 : A_PtrSize
-	    VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
-	    NumPut(cbSize, stGTI,  0, "UInt")   ;	DWORD   cbSize;
-		hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
-	             ? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
-	}
+ControlGet,hwnd,HWND,,,%WinTitle%
+if    (WinActive(WinTitle))    {
+	ptrSize := !A_PtrSize ? 4 : A_PtrSize
+	VarSetCapacity(stGTI, cbSize:=4+4+(PtrSize*6)+16, 0)
+	NumPut(cbSize, stGTI,  0, "UInt")   ;    DWORD   cbSize;
+	hwnd := DllCall("GetGUIThreadInfo", Uint,0, Uint,&stGTI)
+				? NumGet(stGTI,8+PtrSize,"UInt") : hwnd
+}
 
-    WinGet, pid, PID,% "ahk_id " hwnd
-    tmm:=A_TitleMatchMode
-    SetTitleMatchMode, RegEx
-    ret := WinExist("ahk_class " . CandCls . " ahk_pid " pid) ? 2
-        :  WinExist("ahk_class " . CandGCls                 ) ? 2
-        :  WinExist("ahk_class " . ConvCls . " ahk_pid " pid) ? 1
-        :  0
-    SetTitleMatchMode, %tmm%
-    return ret
+WinGet, pid, PID,% "ahk_id " hwnd
+tmm:=A_TitleMatchMode
+SetTitleMatchMode, RegEx
+ret := WinExist("ahk_class " . CandCls . " ahk_pid " pid) ? 2
+	:  WinExist("ahk_class " . CandGCls                 ) ? 2
+	:  WinExist("ahk_class " . ConvCls . " ahk_pid " pid) ? 1
+	:  0
+SetTitleMatchMode, %tmm%
+return ret
 }

@@ -10,6 +10,24 @@ OnTimer:
 		}
 	Return
 
+<!Up::
+	KeyWait, Up
+	if (A_PriorHotkey == A_ThisHotkey) && (400 > A_TimeSincePriorHotkey)
+	send, #{Tab}
+	return
+
+<!Right::
+	KeyWait, Right
+	if (A_PriorHotkey == A_ThisHotkey) && (400 > A_TimeSincePriorHotkey)
+	send, #^{Right}
+	Return
+
+<!Left::
+	KeyWait, Left
+	if (A_PriorHotkey == A_ThisHotkey) && (400 > A_TimeSincePriorHotkey)
+	send, #^{Left}
+	Return
+
 LWin::LCtrl
 Capslock::Ctrl
 sc03a::Ctrl
@@ -22,6 +40,6 @@ sc029::
 	IME_SET(0)
 	Return
 
-vkF2sc070::
+sc070::
 	IME_SET(1)
 	Return
