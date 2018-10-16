@@ -24,4 +24,4 @@
 
 ## Download
 
-[remapwinkey.exe](https://github.com/pokkur/Macnize_Windows_Keyboard/blob/master/dist/remapwinkey.exe)
+[remapwinkey.exe](https://github.com/pokkur/Macnize_Windows_Keyboard/raw/master/dist/remapwinkey.exe)
