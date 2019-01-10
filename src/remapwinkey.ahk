@@ -10,21 +10,21 @@ OnTimer:
 		}
 	Return
 
-<!Up::
+^Up::
 	KeyWait, Up
-	if (A_PriorHotkey == A_ThisHotkey) && (400 > A_TimeSincePriorHotkey)
+	if (A_PriorHotkey == A_ThisHotkey) && (200 > A_TimeSincePriorHotkey)
 	send, #{Tab}
 	return
 
-<!Right::
+^Right::
 	KeyWait, Right
-	if (A_PriorHotkey == A_ThisHotkey) && (400 > A_TimeSincePriorHotkey)
+	if (A_PriorHotkey == A_ThisHotkey) && (200 > A_TimeSincePriorHotkey)
 	send, #^{Right}
 	Return
 
-<!Left::
+^Left::
 	KeyWait, Left
-	if (A_PriorHotkey == A_ThisHotkey) && (400 > A_TimeSincePriorHotkey)
+	if (A_PriorHotkey == A_ThisHotkey) && (200 > A_TimeSincePriorHotkey)
 	send, #^{Left}
 	Return
 
